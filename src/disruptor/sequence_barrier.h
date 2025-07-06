@@ -36,7 +36,7 @@ public:
     int64_t waitFor(int64_t sequence) {
         checkAlert();
 
-        int64_t available = waitStrategy_.waitFor(sequence, cursor_, dependents_);
+        int64_t available = waitStrategy_.waitFor(sequence, cursor_, dependents_, *this);
 
         if (available < sequence) {
             return available;
