@@ -49,24 +49,23 @@ concept WaitStrategyConcept = requires(W w, int64_t seq, Sequence cursor, std::v
 
 class BusySpinWaitStrategy {
 public:
-
     // returns sequence available, possibly larger than requested sequence
     int64_t waitFor(
         int64_t sequence, 
         const Sequence& cursor,
         const std::vector<Sequence*>& dependents    
-    ) {
+    ) const {
         int64_t available_sequence;
         while((available_sequence = dependents_get(cursor,dependents)) < sequence) {
+            
             cpu_relax();
         }
-
         return available_sequence;        
     }
 
-    void signalAllWhenBlocking() {}
+    void signalAllWhenBlocking() const {}
 
-    void producerWait() {
+    void producerWait() const {
         cpu_relax();
     }
 

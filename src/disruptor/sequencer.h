@@ -96,7 +96,7 @@ public:
     
 private:
     Sequence cursor_;
-    WaitStrategy& waitStrategy_;
+    const WaitStrategy& waitStrategy_;
     int64_t nextValue_; //holds the last sequence number claimed by the producer
     int64_t cachedValue_; //holds the last known minimum consumer sequence, slowest gating sequence
     std::vector<Sequence*> gatingSequences_;

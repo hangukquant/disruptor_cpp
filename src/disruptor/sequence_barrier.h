@@ -23,9 +23,9 @@ class SequenceBarrier {
 public:
     SequenceBarrier(
         Sequencer& sequencer_,
-        WaitStrategy& waitStrategy_,
+        const WaitStrategy& waitStrategy_,
         const Sequence& cursor_,
-        std::vector<Sequence*>& dependents_
+        const std::vector<Sequence*>& dependents_
     ) : sequencer_(sequencer_),
         waitStrategy_(waitStrategy_),
         cursor_(cursor_),
@@ -70,9 +70,9 @@ public:
 
 private:
     Sequencer& sequencer_;
-    WaitStrategy& waitStrategy_;
+    const WaitStrategy& waitStrategy_;
     const Sequence& cursor_;    
-    std::vector<Sequence*>& dependents_;
+    const std::vector<Sequence*>& dependents_;
     std::atomic<bool> alerted_;
 
 };

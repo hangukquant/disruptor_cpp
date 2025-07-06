@@ -33,3 +33,5 @@ Makefile
 
 # vcpkg
 vcpkg_installed/
+
+.vscode/
