@@ -60,7 +60,6 @@ class HandlerA : public EventHandler<MyEvent> {
 public:
     void onEvent(MyEvent& event, int64_t sequence, bool) override {
         log("A", sequence, event.value);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 };
 
@@ -68,7 +67,6 @@ class HandlerB : public EventHandler<MyEvent> {
 public:
     void onEvent(MyEvent& event, int64_t sequence, bool) override {
         log("B", sequence, event.value);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 };
 
@@ -76,7 +74,6 @@ class HandlerC : public EventHandler<MyEvent> {
 public:
     void onEvent(MyEvent& event, int64_t sequence, bool) override {
         log("C", sequence, event.value);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 };
 
