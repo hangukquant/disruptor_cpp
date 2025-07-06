@@ -1,0 +1,35 @@
+# Build directories
+/build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Compiled object files
+*.o
+*.obj
+*.lo
+*.la
+*.al
+*.libs
+
+# Executables and libraries
+*.exe
+*.out
+*.app
+*.a
+*.so
+*.dylib
+*.dll
+
+# Editor and OS files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# vcpkg
+vcpkg_installed/
