@@ -71,8 +71,8 @@ public:
 private:
     Sequencer& sequencer_;
     const WaitStrategy& waitStrategy_;
-    const Sequence& cursor_;    
-    const std::vector<Sequence*>& dependents_;
+    const Sequence& cursor_;
+    std::vector<Sequence*> dependents_;
     std::atomic<bool> alerted_;
 
 };

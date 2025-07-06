@@ -150,11 +150,8 @@ void diamond() {
     Sequence& seqA = processorA.getSequence();
     Sequence& seqB = processorB.getSequence();
 
-    printf("[DEBUG] seqA address: %p, seqB address: %p\n", (void*)&seqA, (void*)&seqB);
-
     // Barrier for C, depending on sequences of A and B
     auto barrierC = sequencer.newBarrier({&seqA, &seqB});
-    printf("[DEBUG] barrierC created with dependencies: %p, %p\n", (void*)&seqA, (void*)&seqB);
 
     // Create processor for C
     EventProcessor<MyEvent, decltype(ringBuffer), decltype(barrierC), HandlerC>
@@ -162,7 +159,6 @@ void diamond() {
 
     // Get reference to C's sequence
     Sequence& seqC = processorC.getSequence();
-    printf("[DEBUG] seqC address: %p\n", (void*)&seqC);
 
     // Set gating sequences for the ring buffer
     ringBuffer.setGatingSequences({&seqC});
