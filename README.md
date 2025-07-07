@@ -1,28 +1,24 @@
 # disruptor_cpp
 
-A lightweight, header-only C++ port of the LMAX Disruptor (v3) pattern for high-performance, lock-free event processing. Project targets a flexible, composable, and efficient canonical port of the ring buffer and event processing framework for single- and multi-producer/consumer scenarios.
+A lightweight, header-only C++ port of the LMAX Disruptor (v3) pattern for high-performance, lock-free event processing. Project targets an efficient, canonical port of the LMAX Java implementation for SPSC/MPMC bounded 'queues' for low latency data-sharing between threads.
 
 ## Features
 - Header-only, C++20
 - Lock-free ring buffer
-- Pluggable wait strategies (busy-spin, yield, etc.)
+- Pluggable wait strategies (both producer and consumer/processor)
 - Sequence barriers for complex dependency graphs (diamond, pipeline, etc.)
-- Custom event handlers and processors
-- Simple, clear API for building high-throughput systems
-- Example code for SPSC and diamond dependency patterns
+- Consumer-producer architecture.
+- Simple, matching APIs.
+- Example code for SPSC and diamond dependency patterns under `src/main.cpp`.
 
 ## Build & Installation
 
 ### Prerequisites
-- C++20 compatible compiler (tested with GCC, Clang, MSVC)
+- C++20 compatible compiler
 - CMake 3.10+
 
 ### Build
 ```sh
-# Clone the repository
-$ git clone <your-repo-url> disruptor_cpp
-$ cd disruptor_cpp
-
 # Build using CMake
 $ ./build.sh
 ```
@@ -129,9 +125,6 @@ PRs for. They should be fairly trivial extensions matching the Java implementati
 - support more wait strategies
 - support exception handling strategies
 - support more thread management options
-
-
-
 
 ## License
 
