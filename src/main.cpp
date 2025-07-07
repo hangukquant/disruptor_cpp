@@ -12,10 +12,6 @@
 
 using namespace disruptor;
 
-// ================================================
-// Timestamped Logging Helpers
-// ================================================
-
 inline int64_t now_ns() {
     using namespace std::chrono;
     static auto start = steady_clock::now();
