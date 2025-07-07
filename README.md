@@ -120,7 +120,7 @@ There is a number of low hanging fruits we are working on/would gladly accept
 PRs for. They should be fairly trivial extensions matching the Java implementations.
 
 - add `MultiProducerSequencer`
-- add microbenchmarks
+- add microbenchmarks, tests
 - support DSL
 - support more wait strategies
 - support exception handling strategies
