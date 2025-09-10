@@ -9,16 +9,19 @@
 #include "disruptor/event_processor.h"
 #include "disruptor/sequencer.h"
 #include "disruptor/wait_strategies.h"
+#include "disruptor/exception_handler.h"
 
 using namespace disruptor;
 
-inline int64_t now_ns() {
+inline int64_t now_ns()
+{
     using namespace std::chrono;
     static auto start = steady_clock::now();
     return duration_cast<nanoseconds>(steady_clock::now() - start).count();
 }
 
-inline void log(const std::string& tag, int64_t seq, int64_t val) {
+inline void log(const std::string &tag, int64_t seq, int64_t val)
+{
     int64_t t_ns = now_ns();
     printf("[%12lld ns] [%s] Sequence %lld Value %lld\n", t_ns, tag.c_str(), seq, val);
 }
@@ -27,11 +30,13 @@ inline void log(const std::string& tag, int64_t seq, int64_t val) {
 // Common Event and Factory
 // ================================================
 
-struct MyEvent {
+struct MyEvent
+{
     int64_t value;
 };
 
-auto myEventFactory = []() -> MyEvent {
+auto myEventFactory = []() -> MyEvent
+{
     return MyEvent{0};
 };
 
@@ -39,9 +44,11 @@ auto myEventFactory = []() -> MyEvent {
 // Simple Handler
 // ================================================
 
-class SimpleHandler : public EventHandler<MyEvent> {
+class SimpleHandler : public EventHandler<MyEvent>
+{
 public:
-    void onEvent(MyEvent& event, int64_t sequence, bool endOfBatch) override {
+    void onEvent(MyEvent &event, int64_t sequence, bool endOfBatch) override
+    {
         log("Simple", sequence, event.value);
     }
     void onStart() override { std::cout << "[Simple] Started.\n"; }
@@ -52,23 +59,29 @@ public:
 // Diamond Handlers
 // ================================================
 
-class HandlerA : public EventHandler<MyEvent> {
+class HandlerA : public EventHandler<MyEvent>
+{
 public:
-    void onEvent(MyEvent& event, int64_t sequence, bool) override {
+    void onEvent(MyEvent &event, int64_t sequence, bool) override
+    {
         log("A", sequence, event.value);
     }
 };
 
-class HandlerB : public EventHandler<MyEvent> {
+class HandlerB : public EventHandler<MyEvent>
+{
 public:
-    void onEvent(MyEvent& event, int64_t sequence, bool) override {
+    void onEvent(MyEvent &event, int64_t sequence, bool) override
+    {
         log("B", sequence, event.value);
     }
 };
 
-class HandlerC : public EventHandler<MyEvent> {
+class HandlerC : public EventHandler<MyEvent>
+{
 public:
-    void onEvent(MyEvent& event, int64_t sequence, bool) override {
+    void onEvent(MyEvent &event, int64_t sequence, bool) override
+    {
         log("C", sequence, event.value);
     }
 };
@@ -77,9 +90,9 @@ public:
 // Simple Example
 // ================================================
 
-void simple() {
+void simple()
+{
     std::cout << "\n===== Running Simple Example =====\n";
-
     constexpr size_t bufferSize = 1024;
     BusySpinWaitStrategy waitStrategy;
     SingleProducerSequencer<bufferSize, BusySpinWaitStrategy> sequencer(waitStrategy);
@@ -87,18 +100,21 @@ void simple() {
     RingBuffer<MyEvent, bufferSize, decltype(sequencer), decltype(myEventFactory)>
         ringBuffer(sequencer, myEventFactory);
 
-    Sequence consumerSeq;
-    ringBuffer.setGatingSequences({&consumerSeq});
-
     auto barrier = sequencer.newBarrier({});
     SimpleHandler handler;
 
+    DefaultExceptionHandler<MyEvent> exHandler;
     EventProcessor<MyEvent, decltype(ringBuffer), decltype(barrier), SimpleHandler>
-        processor(ringBuffer, barrier, handler);
+        processor(ringBuffer, barrier, handler, exHandler);
 
-    std::thread consumer([&] { processor.run(); });
+    Sequence &consumerSeq = processor.getSequence();
+    ringBuffer.setGatingSequences({&consumerSeq});
 
-    for (int i = 0; i < 5; ++i) {
+    std::thread consumer([&]
+                         { processor.run(); });
+
+    for (int i = 0; i < 5; ++i)
+    {
         int64_t seq = ringBuffer.next();
         ringBuffer.get(seq).value = i;
         ringBuffer.publish(seq);
@@ -114,7 +130,8 @@ void simple() {
 // Diamond Example
 // ================================================
 
-void diamond() {
+void diamond()
+{
     std::cout << "\n===== Running Diamond Example =====\n";
 
     constexpr size_t bufferSize = 1024;
@@ -134,35 +151,40 @@ void diamond() {
     auto barrierB = sequencer.newBarrier({});
 
     // Create processors for A and B
+    DefaultExceptionHandler<MyEvent> exHandler;
+
     EventProcessor<MyEvent, decltype(ringBuffer), decltype(barrierA), HandlerA>
-        processorA(ringBuffer, barrierA, handlerA);
+        processorA(ringBuffer, barrierA, handlerA, exHandler);
     EventProcessor<MyEvent, decltype(ringBuffer), decltype(barrierB), HandlerB>
-        processorB(ringBuffer, barrierB, handlerB);
+        processorB(ringBuffer, barrierB, handlerB, exHandler);
 
     // Get references to their sequences
-    Sequence& seqA = processorA.getSequence();
-    Sequence& seqB = processorB.getSequence();
+    Sequence &seqA = processorA.getSequence();
+    Sequence &seqB = processorB.getSequence();
 
     // Barrier for C, depending on sequences of A and B
     auto barrierC = sequencer.newBarrier({&seqA, &seqB});
 
     // Create processor for C
     EventProcessor<MyEvent, decltype(ringBuffer), decltype(barrierC), HandlerC>
-        processorC(ringBuffer, barrierC, handlerC);
+        processorC(ringBuffer, barrierC, handlerC, exHandler);
 
     // Get reference to C's sequence
-    Sequence& seqC = processorC.getSequence();
-
+    Sequence &seqC = processorC.getSequence();
     // Set gating sequences for the ring buffer
     ringBuffer.setGatingSequences({&seqC});
 
     // Start threads
-    std::thread threadA([&] { processorA.run(); });
-    std::thread threadB([&] { processorB.run(); });
-    std::thread threadC([&] { processorC.run(); });
+    std::thread threadA([&]
+                        { processorA.run(); });
+    std::thread threadB([&]
+                        { processorB.run(); });
+    std::thread threadC([&]
+                        { processorC.run(); });
 
     // Publish events
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i)
+    {
         int64_t seq = ringBuffer.next();
         ringBuffer.get(seq).value = i;
         ringBuffer.publish(seq);
@@ -186,8 +208,8 @@ void diamond() {
 // ================================================
 // Main
 // ================================================
-
-int main() {
+int main()
+{
     simple();
     diamond();
     return 0;
